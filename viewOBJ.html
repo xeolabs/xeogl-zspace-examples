@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>xeogl Example</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+
+    <script src="libs/xeogl/xeogl.min.js"></script>
+
+    <script src="libs/xeogl/plugins/geometry/k3d.js"></script>
+    <script src="libs/xeogl/plugins/geometry/objGeometry.js"></script>
+
+    <script src="libs/gl-matrix-min.js"></script>
+    <script src="libs/xeogl/plugins/zspace/zSpaceEffect_complete.js"></script>
+    <script src="libs/xeogl/plugins/zspace/zSpaceStylusControl.js"></script>
+
+    <link href="css/styles.css" rel="stylesheet"/>
+
+<body>
+
+<div id="info">
+    <h1>xeogl - viewing an <a
+            href="http://xeogl.org/docs/classes/OBJGeometry.html" target="_parent">OBJGeometry</a> with a <a
+            href="http://xeogl.org/docs/classes/ZSpaceEffect.html" target="_parent">ZSpaceEffect</a></h1>
+</div>
+
+<script>
+
+    var objFile = "assets/models/obj/raptor/raptor.obj";
+    var diffuseTexture = "assets/models/obj/raptor/raptor.jpg"; // Set to null if no diffuse texture
+
+    var zoomSensitivity = 5.0; // Mouse zoom scale - may need to adjust for size of model
+
+    //---------------------------------------------------
+    // Environment - image-based light and reflection map
+    //---------------------------------------------------
+
+    var lights = xeogl.scene.lights;
+
+    //lights.lights = [];
+
+    lights.lightMap = new xeogl.CubeTexture({
+        src: [
+            "assets/textures/light/Uffizi_Gallery/Uffizi_Gallery_Irradiance_PX.png",
+            "assets/textures/light/Uffizi_Gallery/Uffizi_Gallery_Irradiance_NX.png",
+            "assets/textures/light/Uffizi_Gallery/Uffizi_Gallery_Irradiance_PY.png",
+            "assets/textures/light/Uffizi_Gallery/Uffizi_Gallery_Irradiance_NY.png",
+            "assets/textures/light/Uffizi_Gallery/Uffizi_Gallery_Irradiance_PZ.png",
+            "assets/textures/light/Uffizi_Gallery/Uffizi_Gallery_Irradiance_NZ.png"
+        ]
+    });
+
+    lights.reflectionMap = new xeogl.CubeTexture({
+        src: [
+            "assets/textures/reflect/Uffizi_Gallery/Uffizi_Gallery_Radiance_PX.png",
+            "assets/textures/reflect/Uffizi_Gallery/Uffizi_Gallery_Radiance_NX.png",
+            "assets/textures/reflect/Uffizi_Gallery/Uffizi_Gallery_Radiance_PY.png",
+            "assets/textures/reflect/Uffizi_Gallery/Uffizi_Gallery_Radiance_NY.png",
+            "assets/textures/reflect/Uffizi_Gallery/Uffizi_Gallery_Radiance_PZ.png",
+            "assets/textures/reflect/Uffizi_Gallery/Uffizi_Gallery_Radiance_NZ.png"
+        ]
+    });
+
+    //---------------------------------------------------
+    // Mouse and keyboard camera control
+    //---------------------------------------------------
+
+    var cameraControl = new xeogl.CameraControl();
+    cameraControl.mouseZoom.sensitivity = zoomSensitivity;
+
+    //---------------------------------------------------
+    // Load the OBJ mesh
+    //---------------------------------------------------
+
+    var entity = new xeogl.Entity({
+
+        geometry: new xeogl.OBJGeometry({
+            src: objFile
+        }),
+
+        material: new xeogl.PhongMaterial({
+            specularFresnel: new xeogl.Fresnel({ // Fresnel bling for a bit more 'pop'
+                edgeBias: 0.2,
+                centerBias: 0.8,
+                power: 0.5,
+                edgeColor: [0.7, 0.7, 0.7],
+                centerColor: [0.0, 0.0, 0.0]
+            }),
+            emissive: [1, 1, 1],
+            emissiveFresnel: new xeogl.Fresnel({
+                edgeBias: 0.3,
+                centerBias: 0.8,
+                edgeColor: [0.3, 0.3, 0.4],
+                centerColor: [0.0, 0.0, 0.0],
+                power: 0.3
+            })
+        })
+    });
+
+    // If we have a diffuse texture map,
+    // attach it to the entity's material
+
+    if (diffuseTexture) {
+        entity.material.diffuseMap = new xeogl.Texture({
+            src: diffuseTexture
+        });
+    }
+
+    // Auto-fit the entity to view
+
+    var cameraFlight = new xeogl.CameraFlightAnimation();
+
+    entity.worldBoundary.on("updated", function () {
+        cameraFlight.jumpTo({
+            worldBoundary: entity.worldBoundary,
+            fit: true,
+            fitFOV: 50
+        });
+    });
+
+    //---------------------------------------------------
+    // Set up zSpace effect and stylus control
+    //---------------------------------------------------
+
+    var zspaceEffect = new xeogl.ZSpaceEffect({canvasOffset: [0, 0]}); // Assuming always fullscreen
+    var zspaceStylus = new xeogl.ZSpaceStylusControl();
+
+    zspaceEffect.on("supported", function (supported) {
+
+        var view = xeogl.scene.camera.view;
+
+        if (supported) { // Adjust camera to account for for display's special projection transform
+            view.zoom(2);
+            view.rotateEyeX(30);
+        } else {
+            view.zoom(-.5);
+        }
+    });
+
+
+</script>
+</body>
+</html>

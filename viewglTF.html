@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>xeogl Example</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+
+    <script src="libs/xeogl/xeogl.min.js"></script>
+
+    <script src="libs/gl-matrix-min.js"></script>
+    <script src="libs/xeogl/plugins/zspace/zSpaceEffect_complete.js"></script>
+    <script src="libs/xeogl/plugins/zspace/zSpaceStylusControl.js"></script>
+
+    <link href="css/styles.css" rel="stylesheet"/>
+
+<body>
+
+<div id="info">
+    <h1>xeogl - viewing <a href="http://xeogl.org/docs/classes/GLTFModel.html" target="_parent">GLTFModel</a> with <a
+            href="http://xeogl.org/docs/classes/ZSpaceEffect.html" target="_parent">ZSpaceEffect</a></h1>
+</div>
+
+<script>
+
+    var fileName = "assets/models/gltf/2.0/DamagedHelmetModified/PBR-MetalRoughness/DamagedHelmetModified.gltf";
+
+    var zoomSensitivity = 5.0; // Mouse zoom scale - may need to adjust for size of model
+
+    //---------------------------------------------------
+    // Environment - image-based light and reflection map
+    //---------------------------------------------------
+
+    var lights = xeogl.scene.lights;
+
+    //lights.lights = [];
+
+    lights.lightMap = new xeogl.CubeTexture({
+        src: [
+            "assets/textures/light/Uffizi_Gallery/Uffizi_Gallery_Irradiance_PX.png",
+            "assets/textures/light/Uffizi_Gallery/Uffizi_Gallery_Irradiance_NX.png",
+            "assets/textures/light/Uffizi_Gallery/Uffizi_Gallery_Irradiance_PY.png",
+            "assets/textures/light/Uffizi_Gallery/Uffizi_Gallery_Irradiance_NY.png",
+            "assets/textures/light/Uffizi_Gallery/Uffizi_Gallery_Irradiance_PZ.png",
+            "assets/textures/light/Uffizi_Gallery/Uffizi_Gallery_Irradiance_NZ.png"
+        ]
+    });
+
+    lights.reflectionMap = new xeogl.CubeTexture({
+        src: [
+            "assets/textures/reflect/Uffizi_Gallery/Uffizi_Gallery_Radiance_PX.png",
+            "assets/textures/reflect/Uffizi_Gallery/Uffizi_Gallery_Radiance_NX.png",
+            "assets/textures/reflect/Uffizi_Gallery/Uffizi_Gallery_Radiance_PY.png",
+            "assets/textures/reflect/Uffizi_Gallery/Uffizi_Gallery_Radiance_NY.png",
+            "assets/textures/reflect/Uffizi_Gallery/Uffizi_Gallery_Radiance_PZ.png",
+            "assets/textures/reflect/Uffizi_Gallery/Uffizi_Gallery_Radiance_NZ.png"
+        ]
+    });
+
+    //---------------------------------------------------
+    // Mouse and keyboard camera control
+    //---------------------------------------------------
+
+    var cameraControl = new xeogl.CameraControl();
+    cameraControl.mouseZoom.sensitivity = zoomSensitivity;
+
+    //---------------------------------------------------
+    // Load the glTF model
+    //---------------------------------------------------
+
+    var model = new xeogl.GLTFModel({
+        src: fileName
+    });
+
+    // Auto-fit the model to view whenever the model's World-space boundary changes,
+    // which happens when it loads
+
+    var cameraFlight = new xeogl.CameraFlightAnimation();
+
+    model.worldBoundary.on("updated", function () {
+        cameraFlight.jumpTo({
+            worldBoundary: model.worldBoundary,
+            fit: true,
+            fitFOV: 50
+        });
+    });
+
+    //---------------------------------------------------
+    // Set up zSpace effect and stylus control
+    //---------------------------------------------------
+
+    var zspaceEffect = new xeogl.ZSpaceEffect({canvasOffset: [0, 0]}); // Assuming always fullscreen
+    var zspaceStylus = new xeogl.ZSpaceStylusControl();
+
+    zspaceEffect.on("supported", function (supported) {
+
+        var view = xeogl.scene.camera.view;
+
+        if (supported) { // Adjust camera to account for for display's special projection transform
+            view.zoom(2);
+            view.rotateEyeX(30);
+        } else {
+            view.zoom(-.5);
+        }
+    });
+
+</script>
+</body>
+</html>
