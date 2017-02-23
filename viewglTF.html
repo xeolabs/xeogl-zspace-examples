@@ -22,7 +22,7 @@
 
 <script>
 
-    var fileName = "assets/models/gltf/2.0/DamagedHelmetModified/PBR-MetalRoughness/DamagedHelmetModified.gltf";
+    var fileName = "assets/models/gltf/2.0/Reciprocating_Saw/PBR-SpecGloss/Reciprocating_Saw.gltf";
 
     var zoomSensitivity = 5.0; // Mouse zoom scale - may need to adjust for size of model
 
@@ -76,12 +76,27 @@
 
     var cameraFlight = new xeogl.CameraFlightAnimation();
 
-    model.worldBoundary.on("updated", function () {
+    xeogl.scene.worldBoundary.on("updated", function () {
         cameraFlight.jumpTo({
-            worldBoundary: model.worldBoundary,
+            worldBoundary: xeogl.scene.worldBoundary,
             fit: true,
-            fitFOV: 50
+            fitFOV: 30
         });
+    });
+
+    model.on("loaded", function () {
+        var entities = model.types["xeogl.Entity"];
+        var entity;
+        for (var entityId in entities) {
+            if (entities.hasOwnProperty(entityId)) {
+                entity = entities[entityId];
+                if (entity.transform && entity.transform.parent) {
+                    model.add(entity.transform = new xeogl.Transform({
+                        matrix: entity.transform.leafMatrix
+                    }));
+                }
+            }
+        }
     });
 
     //---------------------------------------------------

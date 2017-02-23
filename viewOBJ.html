@@ -26,10 +26,23 @@
 
 <script>
 
+
+    //---------------------------------------------------------------------------------------------------------------------
+    // For some reason this example does not drag correctly with the stylus.
+    //---------------------------------------------------------------------------------------------------------------------
+
+    // OBJ and optional diffuse map
     var objFile = "assets/models/obj/raptor/raptor.obj";
     var diffuseTexture = "assets/models/obj/raptor/raptor.jpg"; // Set to null if no diffuse texture
 
-    var zoomSensitivity = 5.0; // Mouse zoom scale - may need to adjust for size of model
+    // Mouse zoom scale - may need to adjust for size of model
+    var zoomSensitivity = 5.0;
+
+    // Set camera position
+    var lookat = xeogl.scene.camera.view;
+    lookat.eye = [29.66083526611328, 42.810482025146484, 251.4608917236328];
+    lookat.look = [29.66083526611328, 42.810482025146484, 21.20804786682129];
+    lookat.up = [0,1,0];
 
     //---------------------------------------------------
     // Environment - image-based light and reflection map
@@ -106,18 +119,6 @@
         });
     }
 
-    // Auto-fit the entity to view
-
-    var cameraFlight = new xeogl.CameraFlightAnimation();
-
-    entity.worldBoundary.on("updated", function () {
-        cameraFlight.jumpTo({
-            worldBoundary: entity.worldBoundary,
-            fit: true,
-            fitFOV: 50
-        });
-    });
-
     //---------------------------------------------------
     // Set up zSpace effect and stylus control
     //---------------------------------------------------
@@ -127,15 +128,17 @@
 
     zspaceEffect.on("supported", function (supported) {
 
-        var view = xeogl.scene.camera.view;
-
-        if (supported) { // Adjust camera to account for for display's special projection transform
-            view.zoom(2);
-            view.rotateEyeX(30);
-        } else {
-            view.zoom(-.5);
-        }
+//        var view = xeogl.scene.camera.view;
+//
+//        if (supported) { // Adjust camera to account for for display's special projection transform
+//            view.zoom(2);
+//            view.rotateEyeX(30);
+//        } else {
+//            view.zoom(-.5);
+//        }
     });
+
+
 
 
 </script>
